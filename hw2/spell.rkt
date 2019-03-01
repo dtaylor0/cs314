@@ -17,14 +17,20 @@
 
 ;; *** CODE FOR ANY HELPER FUNCTION GOES HERE ***
 
+(define makeBitvector
+  (lambda (hashfunctionlist dict)
+    (if (null? hashfunctionlist)
+      '()
+      (append (map (car hashfunctionlist) dict) (makeBitvector (cdr hashfunctionlist) dict)))))
 
 ;; -----------------------------------------------------
 ;; KEY FUNCTION
 
 (define key
   (lambda (w)
-     'SOME_CODE_GOES_HERE ;; *** FUNCTION BODY IS MISSING ***
-))
+    (if (null? w)
+      5413
+      (+ (* (key (cdr w)) 29) (ctv (car w))))))
 
 ;; -----------------------------------------------------
 ;; EXAMPLE KEY VALUES
@@ -38,8 +44,8 @@
 ;; value of parameter "size" should be a prime number
 (define gen-hash-division-method
   (lambda (size) ;; range of values: 0..size-1
-     'SOME_CODE_GOES_HERE ;; *** FUNCTION BODY IS MISSING ***
-))
+    (lambda (w)
+      (modulo (key w) size))))
 
 ;; value of parameter "size" is not critical
 ;; Note: hash functions may return integer values in "real"
@@ -47,8 +53,10 @@
 
 (define gen-hash-multiplication-method
   (lambda (size) ;; range of values: 0..size-1
-     'SOME_CODE_GOES_HERE ;; *** FUNCTION BODY IS MISSING ***
-))
+    (lambda (w)
+      (define k (key w))
+      (define A 0.6780227553)
+      (floor (* size (- (* k A) (floor (* k A))))))))
 
 
 ;; -----------------------------------------------------
@@ -88,18 +96,28 @@
 
 (define gen-checker
   (lambda (hashfunctionlist dict)
-     'SOME_CODE_GOES_HERE ;; *** FUNCTION BODY IS MISSING ***
-))
+    'SOME_CODE_GOES_HERE ;; *** FUNCTION BODY IS MISSING ***
+    (lambda (w)
+      (let ((bitvector (makeBitvector hashfunctionlist dict)) (wordvector (makeBitvector hashfunctionlist (list w))))
+        (map (lambda (i)
+               (cond
+                 [(not (member i bitvector)) #f]))
+                 wordvector))
+      #t)))
 
-;; -----------------------------------------------------
-;; EXAMPLE SPELL CHECKERS
+    ;; -----------------------------------------------------
+    ;; EXAMPLE SPELL CHECKERS
 
-(define checker-1 (gen-checker hashfl-1 dictionary))
-(define checker-2 (gen-checker hashfl-2 dictionary))
-(define checker-3 (gen-checker hashfl-3 dictionary))
+    (define checker-1 (gen-checker hashfl-1 dictionary))
+    (define checker-2 (gen-checker hashfl-2 dictionary))
+    (define checker-3 (gen-checker hashfl-3 dictionary))
 
-;; EXAMPLE APPLICATIONS OF A SPELL CHECKER
-;;
-;;  (checker-1 '(a r g g g g)) ==> #f
-;;  (checker-2 '(h e l l o)) ==> #t
-;;  (checker-2 '(a r g g g g)) ==> #f
+    ;; EXAMPLE APPLICATIONS OF A SPELL CHECKER
+    ;;
+    ;;  (checker-1 '(a r g g g g)) ==> #f
+    ;;  (checker-2 '(h e l l o)) ==> #t
+    ;;  (checker-2 '(a r g g g g)) ==> #f
+
+    (checker-1 '(a r g g g g))
+    (checker-2 '(h e l l o))
+    (checker-2 '(a r g g g g))
