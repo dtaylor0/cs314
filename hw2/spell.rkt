@@ -230,6 +230,6 @@
 ;(checker-1 '(a r g g g g))
 ;(checker-2 '(h e l l o))
 ;(checker-1 '(h e l l o))
-(checker-2 '(t r e e f r o g))
+;(checker-2 '(t r e e f r o g))
 
 
