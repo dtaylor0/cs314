@@ -10,18 +10,17 @@
 (require "include.rkt")
 
 ;; contains simple dictionary definition
-(require "test-dictionary.rkt")
+(require "dictionary.rkt")
 
 ;; -----------------------------------------------------
 ;; HELPER FUNCTIONS
-
 ;; *** CODE FOR ANY HELPER FUNCTION GOES HERE ***
-
+    
 (define makeBitvector
   (lambda (hashfunctionlist dict)
     (if (null? hashfunctionlist)
       '()
-      (append (map (car hashfunctionlist) dict) (makeBitvector (cdr hashfunctionlist) dict)))))
+      (cons (map (car hashfunctionlist) dict) (makeBitvector (cdr hashfunctionlist) dict)))))
 
 ;; -----------------------------------------------------
 ;; KEY FUNCTION
@@ -54,9 +53,8 @@
 (define gen-hash-multiplication-method
   (lambda (size) ;; range of values: 0..size-1
     (lambda (w)
-      (define k (key w))
-      (define A 0.6780227553)
-      (floor (* size (- (* k A) (floor (* k A))))))))
+      (let ((k (key w)))
+        (floor (* size (- (* k A) (floor (* k A)))))))))
 
 
 ;; -----------------------------------------------------
@@ -74,50 +72,164 @@
 ;; -----------------------------------------------------
 ;; EXAMPLE HASH VALUES
 ;;   to test your hash function implementation
-;;
-;; (hash-1 '(h e l l o))        ==> 26303
-;; (hash-1 '(m a y))            ==> 19711
-;; (hash-1 '(t r e e f r o g))  ==> 3010
-;;
-;; (hash-2 '(h e l l o))        ==> 64598
-;; (hash-2 '(m a y))            ==> 24861
-;; (hash-2 '(t r e e f r o g))  ==> 23090
-;;
-;; (hash-3 '(h e l l o))        ==> 313800.0
-;; (hash-3 '(m a y))            ==> 317136.0
-;; (hash-3 '(t r e e f r o g))  ==> 525319.0
-;;
-;; (hash-4 '(h e l l o))        ==> 426.0
-;; (hash-4 '(m a y))            ==> 431.0
-;; (hash-4 '(t r e e f r o g))  ==> 714.0
+
+#|(hash-1 '(h e l l o));        ==> 26303
+(hash-1 '(m a y))      ;      ==> 19711
+(hash-1 '(t r e e f r o g));  ==> 3010
+
+(hash-2 '(h e l l o))       ; ==> 64598
+(hash-2 '(m a y))            ;==> 24861
+(hash-2 '(t r e e f r o g))  ;==> 23090
+
+(hash-3 '(h e l l o))        ;==> 313800.0
+(hash-3 '(m a y))            ;==> 317136.0
+(hash-3 '(t r e e f r o g))  ;==> 525319.0
+
+(hash-4 '(h e l l o))        ;==> 426.0
+(hash-4 '(m a y))            ;==> 431.0
+(hash-4 '(t r e e f r o g))  ;==> 714.0
+|#
 
 ;; -----------------------------------------------------
 ;; SPELL CHECKER GENERATOR
 
 (define gen-checker
   (lambda (hashfunctionlist dict)
-    'SOME_CODE_GOES_HERE ;; *** FUNCTION BODY IS MISSING ***
-    (lambda (w)
-      (let ((bitvector (makeBitvector hashfunctionlist dict)) (wordvector (makeBitvector hashfunctionlist (list w))))
-        (map (lambda (i)
-               (cond
-                 [(not (member i bitvector)) #f]))
-                 wordvector))
-      #t)))
+    (let ((bitvector (reduce append (makeBitvector hashfunctionlist dict) '())))
+      (lambda (w)
+        (let ((wordvector (reduce append (makeBitvector hashfunctionlist (list w)) '())))
+          (andmap (lambda (i) (if (member i bitvector) #t #f)) wordvector))))))
 
-    ;; -----------------------------------------------------
-    ;; EXAMPLE SPELL CHECKERS
+;; -----------------------------------------------------
+;; EXAMPLE SPELL CHECKERS
 
-    (define checker-1 (gen-checker hashfl-1 dictionary))
-    (define checker-2 (gen-checker hashfl-2 dictionary))
-    (define checker-3 (gen-checker hashfl-3 dictionary))
+(define checker-1 (gen-checker hashfl-1 dictionary))
+(define checker-2 (gen-checker hashfl-2 dictionary))
+(define checker-3 (gen-checker hashfl-3 dictionary))
 
-    ;; EXAMPLE APPLICATIONS OF A SPELL CHECKER
-    ;;
-    ;;  (checker-1 '(a r g g g g)) ==> #f
-    ;;  (checker-2 '(h e l l o)) ==> #t
-    ;;  (checker-2 '(a r g g g g)) ==> #f
+;; EXAMPLE APPLICATIONS OF A SPELL CHECKER
+;;
+;;
+;;
+;(checker-1 '(a r g g g g)) ;==> #f
+;(checker-2 '(h e l l o)) ;==> #t
+;(checker-2 '(a r g g g g)); ==> #f
 
-    (checker-1 '(a r g g g g))
-    (checker-2 '(h e l l o))
-    (checker-2 '(a r g g g g))
+;(checker-1 '(a r g g g g))
+;(checker-2 '(h e l l o))
+;(checker-1 '(h e l l o))
+;(checker-2 '(t r e e f r o g))
+
+
+;(checker-1 '(a r g g g g))
+;(checker-2 '(h e l l o))
+;(checker-1 '(h e l l o))
+;(checker-3 '(t r e e f r o g))
+
+;(checker-1 '(a r g g g g))
+;(checker-2 '(h e l l o))
+;(checker-1 '(h e l l o))
+;(checker-2 '(t r e e f r o g))
+;
+
+;(checker-1 '(a r g g g g))
+;(checker-2 '(h e l l o))
+;(checker-1 '(h e l l o))
+;(checker-3 '(t r e e f r o g))
+;(checker-1 '(a r g g g g)) ;==> #f
+;(checker-2 '(h e l l o)) ;==> #t
+;(checker-2 '(a r g g g g)); ==> #f
+
+;(checker-1 '(a r g g g g))
+;(checker-2 '(h e l l o))
+;(checker-1 '(h e l l o))
+;(checker-2 '(t r e e f r o g))
+
+;(checker-3 '(a r g g g g)) ;==> #f
+;(checker-3 '(h e l l o)) ;==> #t
+;(checker-2 '(a r g g g g)); ==> #f
+
+;(checker-1 '(a r g g g g))
+;(checker-2 '(h e l l o))
+;(checker-1 '(h e l d))
+;(checker-3 '(t r e e))
+;(checker-1 '(a r g g g)) ;==> #f
+;(checker-2 '(h e l l o)) ;==> #t
+;(checker-2 '(a r g g)); ==> #f
+;
+;(checker-1 '(a g e))
+;(checker-2 '(y e l l o w))
+;(checker-1 '(h e l l))
+;(checker-2 '(f r o g))
+;
+;
+;(checker-1 '(a r b i t r a r y))
+;(checker-2 '(h e l d))
+;(checker-1 '(h e l l o))
+;(checker-2 '(z o o l o g i c a l))
+;(checker-1 '(a r g g g g)) ;==> #f
+;(checker-2 '(h e l l o)) ;==> #t
+;(checker-2 '(a r g g g g)); ==> #f
+;
+;(checker-1 '(a r g g g g))
+;(checker-2 '(h e l l o))
+;(checker-1 '(h e l l o))
+;(checker-2 '(t r e e f r o g))
+;
+;
+;(checker-1 '(a r g g g g))
+;(checker-2 '(h e l l o))
+;(checker-1 '(h e l l o))
+;(checker-3 '(t r e e f r o g))
+;
+;(checker-1 '(a r g g g g))
+;(checker-2 '(h e l l o))
+;(checker-1 '(h e l l o))
+;(checker-2 '(t r e e f r o g))
+;
+
+;(checker-1 '(a r g g g g))
+;(checker-2 '(h e l l o))
+;(checker-1 '(h e l l o))
+;(checker-3 '(t r e e f r o g))
+;(checker-1 '(a r g g g g)) ;==> #f
+;(checker-2 '(h e l l o)) ;==> #t
+;(checker-2 '(a r g g g g)); ==> #f
+
+;(checker-1 '(a r g g g g))
+;(checker-2 '(h e l l o))
+;(checker-1 '(h e l l o))
+;(checker-2 '(t r e e f r o g))
+
+;(checker-3 '(a r g g g g)) ;==> #f
+;(checker-3 '(h e l l o)) ;==> #t
+;(checker-2 '(a r g g g g)); ==> #f
+
+;(checker-1 '(a r g g g g))
+;(checker-2 '(h e l l o))
+;(checker-1 '(h e l d))
+;(checker-3 '(t r e e))
+;(checker-1 '(a r g g g)) ;==> #f
+;(checker-2 '(h e l l o)) ;==> #t
+;(checker-2 '(a r g g)); ==> #f
+;
+;(checker-1 '(a g e))
+;(checker-2 '(y e l l o w))
+;(checker-1 '(h e l l))
+;(checker-2 '(f r o g))
+
+
+;(checker-1 '(a r b i t r a r y))
+;(checker-2 '(h e l d))
+;(checker-1 '(h e l l o))
+;(checker-2 '(z o o l o g i c a l))
+;(checker-1 '(a r g g g g)) ;==> #f
+;(checker-2 '(h e l l o)) ;==> #t
+;(checker-2 '(a r g g g g)); ==> #f
+
+;(checker-1 '(a r g g g g))
+;(checker-2 '(h e l l o))
+;(checker-1 '(h e l l o))
+(checker-2 '(t r e e f r o g))
+
+
